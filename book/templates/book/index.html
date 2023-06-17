@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Books</title>
+    <style>
+        img {
+            box-shadow: rgb(249 254 184) 0px 0px 20px;
+        }
+
+    </style>
+</head>
+<body>
+{% load static %}
+
+{% for book in books %}
+    <a href="book/{{book.book_id}}"><img width=120 src="{{book_dir}}{{book.book_id}}/{{book.book_id}}.jpg"></a>
+{% endfor %}
+
+</body>
+</html>
