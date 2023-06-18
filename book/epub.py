@@ -2,6 +2,7 @@ import datetime
 import hashlib
 import os
 import os.path
+import shutil
 import traceback
 import xml.etree.ElementTree as ET
 import xml.sax as sax  # import ContentHandler
@@ -25,7 +26,7 @@ class ContainerHandler(sax.ContentHandler):
 class Epub:
     zip = None
 
-    def __init__(self, file: str, cache_path=None) -> None:
+    def __init__(self, file: str, cache_path=None,re_extract=False) -> None:
         self.book_name = ""
         self.auther = ""
         self.id = ""
@@ -36,9 +37,12 @@ class Epub:
         self.cover_path = ""
         self.spine = []
         self.menu = []
+        self.re_extract = re_extract
 
         self.cache_path = cache_path
-        if file.endswith(".epub"):
+
+        if zipfile.is_zipfile(file):
+            self.zip_file = file
             self.init_epub(file)
         elif os.path.isdir(file):
             self.init_dir(file)
@@ -65,6 +69,8 @@ class Epub:
             if self.cache_path and not os.path.exists(self.cache_path):
                 os.makedirs(self.cache_path)
             path = os.path.join(self.cache_path, self.id)
+            if os.path.exists(path) and self.re_extract and len(self.id)==32:
+                shutil.rmtree(path)
             zip.extractall(path)
             self.init_dir(path)
 
@@ -197,8 +203,8 @@ class Epub:
         try:
             Image.open(cover).save(cover_path)
             self.cover_path = cover_path
-        except:
-            pass
+        except Exception as e:
+            print("ERROR:.......... cover",e)
 
     def parse_mainfest(self, doc):
         manifest = doc.getElementsByTagName("manifest")

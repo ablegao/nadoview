@@ -17,6 +17,9 @@
 </head>
 <body>
 {% load static %}
+<form id="upload_form" action="/book/upload_book" method="post" enctype="multipart/form-data" >
+<input type="file" class="form-control form-control-sm" name="uploadEpub" id ="uploadEpub">{% csrf_token %}
+</form>
 <div class="row g-1">
 <input type="text" class="form-control"  id="filterInput">
 </div>
@@ -46,6 +49,9 @@
             }
         });
 
+    });
+    $("#uploadEpub").on("change",function(){
+        $("#upload_form").submit();
     });
 </script>
 

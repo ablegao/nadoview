@@ -17,6 +17,21 @@ def index(request):
     # loader.get_template("book/index.html")
     return TemplateResponse(request,"book/index.html",{"books":books,"book_dir":settings.BOOK_URL})
 
+def upload_book(request):
+    if request.method == "POST":
+        file = request.FILES.get("uploadEpub")
+        if file is None:
+            return JsonResponse({"status":"error","msg":"no file"})
+        if not file.name.endswith(".epub"):
+            return JsonResponse({"status":"error","msg":"not epub file"})
+        epub =  Epub(file,settings.BOOK_PATH,re_extract=True)
+
+        # print(epub.book_name)
+        if not Book.objects.filter(book_id=epub.id).exists():
+            book = Book(book_id=epub.id,book_name=epub.book_name,book_author=epub.auther,language=epub.lang)
+            book.save()
+        return HttpResponseRedirect("/")
+    return JsonResponse({"status":"error","msg":"not post"})
 
 def book(request,id=None):
    
