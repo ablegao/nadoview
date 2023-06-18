@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load static %}
+{% load django_bootstrap5 %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -370,6 +371,7 @@
     <li><a href="/">Back</a></li>
     <li><img src="/book_static/{{epub.id}}/{{epub.id}}.jpg" alt="logo"></li>
   </ul>
+  <a id="prev" href="" >Menu</a>
   <a id="prev" href="javascript:rendition.prev()" class="navlink">...</a>
   <div id="viewer"  ></div>
   <a id="next" href="javascript:rendition.next()" class="navlink">...</a>
@@ -385,7 +387,7 @@
           flow: "scrolled",
           width: "60%"
         });
-        rendition.themes.default({ "p": { "font-size": "medium !important"}})
+        rendition.themes.default({ "p": { "font-size": "19px",'font-family':"PingFang SC"}})
 
         book.loaded.navigation.then(function(toc){
           var $nav = document.getElementById("menu"),

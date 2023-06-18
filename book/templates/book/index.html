@@ -1,21 +1,53 @@
+{% load django_bootstrap5 %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <title>Books</title>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
     <style>
-        img {
-            box-shadow: rgb(249 254 184) 0px 0px 20px;
-        }
+        a{text-decoration:none;}
 
     </style>
+
 </head>
 <body>
 {% load static %}
-
+<div class="row g-1">
+<input type="text" class="form-control"  id="filterInput">
+</div>
+<div class="row row-cols-3 row-cols-md-2 g-1 m-1">
 {% for book in books %}
-    <a href="book/{{book.book_id}}"><img width=120 src="{{book_dir}}{{book.book_id}}/{{book.book_id}}.jpg"></a>
+  <div class="card shadow h-100 m-1" style="max-width: 9rem;">
+    <a href="book/{{book.book_id}}" class="link-secondary" >
+    <img alt="{{book.book_name}}"  class="card-img-top" onerror="this.onerror=null; this.remove();" src="{{book_dir}}{{book.book_id}}/{{book.book_id}}.jpg">
+    <div class="card-body"  > 
+      <p class="card-text">{{book.book_name}}</p>
+     <span style="display:none;">{{book.tags}}{{book.language}}</span>
+    </div>
+</a>
+  </div>
 {% endfor %}
+
+</div>
+<script>
+    $("#filterInput").on("input",function(){
+        var filtertext = $("#filterInput").val();
+        console.log(filtertext);
+        $(".card").each(function(index,element){
+            if(element.innerText.indexOf(filtertext)>-1){
+                $(element).removeClass("d-none");
+            }else{
+                $(element).addClass("d-none");
+            }
+        });
+
+    });
+</script>
 
 </body>
 </html>
