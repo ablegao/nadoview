@@ -24,6 +24,7 @@ from nadoview import settings
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("book/upload_book",book.views.upload_book),
+    path("book/refresh_book_cache",book.views.refresh_book_cache),
 
     path("book/<str:id>/save_progress",book.views.book_save),
     path("book/<str:id>", book.views.book),

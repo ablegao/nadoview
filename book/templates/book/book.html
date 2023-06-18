@@ -24,7 +24,7 @@
       <h5 class="offcanvas-title" id="offcanvasExampleLabel">{{epub.book_name}}</h5>
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
-    <center><img style="display:inline;" width=120 src="/book_static/{{epub.id}}/{{epub.id}}.jpg" alt="logo"></center>
+    <center><img onerror="this.onerror=null; this.remove();" style="display:inline;" width=120 src="/book_static/{{epub.id}}/{{epub.id}}.jpg" alt="logo"></center>
 
     <div class="offcanvas-body">
       <ul class="list-group" id="menu">
@@ -53,16 +53,14 @@
   <li class="breadcrumb-item">
     <a id="prev" href="javascript:rendition.prev()" class="link-body-emphasis text-decoration-none">...</a>
   </li>
+
+  <li class="breadcrumb-item">
+    <a id="next" href="javascript:rendition.next()" class="link-body-emphasis text-decoration-none">...</a>
+  </li>
  </ul>
 
   <div id="viewer" ></div>
-  
-  <ul class="breadcrumb">
-    
-    <li class="breadcrumb-item">
-      <a id="next" href="javascript:rendition.next()" class="link-body-emphasis text-decoration-none">...</a>
-    </li>
-  </ul>
+   
  <!-- js 部分-->
     <script>
         var book = ePub("/book_static/{{epub.id}}/{{epub.opf_file}}");
@@ -72,7 +70,7 @@
           manager: "default",
           flow: "paginated",//"scrolled",
           width: "100%",
-          height:$(window).height()-82,
+          height:$(window).height()-42,
         });
         rendition.themes.default({ "p": { "font-size": "19px",'font-family':"PingFang SC"}})
 
@@ -143,7 +141,8 @@
           } else {
             prev.textContent = "";
           }
-          console.log('rendition.currentLocation():', rendition.currentLocation()["start"]["cfi"]);
+              
+          console.log('rendition.currentLocation():', rendition.currentLocation());
           $.ajax(
             {
                 url: "/book/{{epub.id}}/save_progress",
@@ -151,14 +150,16 @@
                 data: {
                     "csrfmiddlewaretoken": "{{ csrf_token }}",   
                     "progress": rendition.currentLocation()["start"]["cfi"],
-                    "book_id": "{{epub.id}}"
+                    "book_id": "{{epub.id}}",
+                    "index": rendition.currentLocation()["start"]["index"],
+                    "total_page":book.spine.length,
                 },
                 success: function (data) {
                     console.log(data);
                 }
             }
           );
-    
+       
         });
 
 

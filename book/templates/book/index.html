@@ -1,4 +1,5 @@
 {% load django_bootstrap5 %}
+{% load bootstrap_icons %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,12 +12,13 @@
     {% bootstrap_javascript %}
     <style>
         a{text-decoration:none;}
-
     </style>
-
 </head>
 <body>
+    <button type="button" id="refresh_book_cache" class="btn btn-primary">Refresh</button>
+
 {% load static %}
+
 <form id="upload_form" action="/book/upload_book" method="post" enctype="multipart/form-data" >
 <input type="file" class="form-control form-control-sm" name="uploadEpub" id ="uploadEpub">{% csrf_token %}
 </form>
@@ -29,9 +31,9 @@
     <a href="book/{{book.book_id}}" class="link-secondary" >
     <img alt="{{book.book_name}}"  class="card-img-top" onerror="this.onerror=null; this.remove();" src="{{book_dir}}{{book.book_id}}/{{book.book_id}}.jpg">
     <div class="card-body"  > 
-      <p class="card-text">{{book.book_name}}</p>
-     <span style="display:none;">{{book.tags}}{{book.language}}</span>
+      <p class="card-text" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">{{book.book_name}}<span style="display:none;">{{book.tags}}{{book.language}}</span></p>
     </div>
+    <div class="card-footer" style="font-size:9px;text-align:right;">{% widthratio book.last_read_index book.total_page 100%}%</div>
 </a>
   </div>
 {% endfor %}
@@ -52,6 +54,18 @@
     });
     $("#uploadEpub").on("change",function(){
         $("#upload_form").submit();
+    });
+
+    $("#refresh_book_cache").click(function(){
+        $.ajax({
+            url:"/book/refresh_book_cache",
+            type:"get",
+            success:function(data){
+                console.log(data);
+                location.reload();
+            }
+        });
+
     });
 </script>
 

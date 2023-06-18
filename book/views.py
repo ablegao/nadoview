@@ -1,6 +1,7 @@
 import os
+from glob import glob
 
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import loader
 from django.template.response import TemplateResponse
 from genericpath import isfile
@@ -32,6 +33,16 @@ def upload_book(request):
             book.save()
         return HttpResponseRedirect("/")
     return JsonResponse({"status":"error","msg":"not post"})
+def refresh_book_cache(request):
+    books = glob(os.path.join(settings.BOOK_PATH,"*"))
+    for book in books:
+        if isfile(book):
+            continue
+        epub = Epub(book,settings.BOOK_PATH)
+        if not Book.objects.filter(book_id=epub.id).exists():
+            book = Book(book_id=epub.id,book_name=epub.book_name,book_author=epub.auther,language=epub.lang)
+            book.save()
+    return JsonResponse({"msg":"success"})
 
 def book(request,id=None):
    
@@ -56,5 +67,7 @@ def book_save(request,id):
     obj = Book.objects.get(book_id=id)
     # print(obj)
     obj.last_read_page = request.POST.get("progress")
+    obj.last_read_index = request.POST.get("index")
+    obj.total_page = request.POST.get("total_page")
     obj.save()
     return JsonResponse({"msg":"success"})
