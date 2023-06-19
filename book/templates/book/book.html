@@ -8,9 +8,10 @@
     <meta charset="UTF-8">
     <meta content='width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0' name='viewport' />
     <title>{{epub.book_name}}</title>
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <script src="{% static "jquery-3.7.0.min.js"%}"></script>
+
     <script src="{% static "epub.js"%}"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/detect_swipe/2.1.1/jquery.detect_swipe.min.js"></script>
     {% bootstrap_css %}
     {% bootstrap_javascript %}
     <link rel="stylesheet" href="{% static 'bootstrap_icons/css/bootstrap_icons.css' %}">
@@ -53,14 +54,20 @@
   <li class="breadcrumb-item">
     <a id="prev" href="javascript:rendition.prev()" class="link-body-emphasis text-decoration-none">...</a>
   </li>
-
   <li class="breadcrumb-item">
     <a id="next" href="javascript:rendition.next()" class="link-body-emphasis text-decoration-none">...</a>
   </li>
- </ul>
+</ul>
 
   <div id="viewer" ></div>
-   
+   <center>
+  <div class="btn-group" role="group" aria-label="Basic example"> 
+    <button type="button" class="btn btn-secondary"  onclick="javascript:rendition.prev()" >Prev</button>
+    <button type="button" class="btn btn-secondary"  onclick="javascript:rendition.next()" >Next</button>   
+
+  </div>
+</center>
+
  <!-- js 部分-->
     <script>
         var book = ePub("/book_static/{{epub.id}}/{{epub.opf_file}}");
@@ -70,7 +77,8 @@
           manager: "default",
           flow: "paginated",//"scrolled",
           width: "100%",
-          height:$(window).height()-42,
+          height:$(window).height()-78,
+          //view:InlineView,
         });
         rendition.themes.default({ "p": { "font-size": "19px",'font-family':"PingFang SC"}})
 
@@ -105,11 +113,25 @@
         var displayed = rendition.display({{epubcfi }});
         {% endautoescape %}
 
-        /*
-        displayed.then(function() {
-          console.log('rendition.currentLocation():', rendition.currentLocation());
-        });*/
-
+        // 记录阅读进度
+        rendition.on("locationChanged",function(config){
+          $.ajax({
+            url: "/book/{{epub.id}}/save_progress",
+            type: "POST",
+            data:{
+              "csrfmiddlewaretoken": "{{ csrf_token }}",   
+              "progress": config["start"],
+              "book_id": "{{epub.id}}",
+              "index":config["index"],
+              "total_page":book.spine.length,
+            },
+            success: function (data) {
+              console.log(data);
+            } 
+          });
+          
+        });
+        // 计算上一页下一页的名称
         rendition.on("rendered", function(section){
           var nextSection = section.next();
           var prevSection = section.prev();
@@ -142,27 +164,36 @@
             prev.textContent = "";
           }
               
-          console.log('rendition.currentLocation():', rendition.currentLocation());
-          $.ajax(
-            {
-                url: "/book/{{epub.id}}/save_progress",
-                type: "POST",
-                data: {
-                    "csrfmiddlewaretoken": "{{ csrf_token }}",   
-                    "progress": rendition.currentLocation()["start"]["cfi"],
-                    "book_id": "{{epub.id}}",
-                    "index": rendition.currentLocation()["start"]["index"],
-                    "total_page":book.spine.length,
-                },
-                success: function (data) {
-                    console.log(data);
-                }
-            }
-          );
-       
         });
+        // 缩放时，保持当前位置
+        var mycfi;
+        var justResized = false;
+        var correcting = false;
+        rendition.on('relocated', () => {
+            // console.log('relocated')
+            if (!justResized) {
+                if (!correcting) {
+                    // console.log('real relocation')
+                    mycfi = rendition.currentLocation().start.cfi
+                } else {
+                    // console.log('corrected')
+                    correcting = false
+                }
+            } else {
+                // console.log('correcting')
+                justResized = false
+                correcting = true
+                rendition.display(mycfi)
+            }
+        })
+        rendition.on('resized', () => {
+            // console.log('resized')
+            justResized = true
+        })
 
+       
 
+        // 键盘控制翻页
         
         $(document).keydown(function(event){
             var keyCode = event.keyCode |event.which;
@@ -178,6 +209,8 @@
             }
 
         });
+
+        // 手势控制翻页
         $(window).on( "swipeleft", function( event ) {
             rendition.next();
           });
@@ -186,7 +219,7 @@
             rendition.prev();
           });
 
-    
+   
       
     </script>
 </body>

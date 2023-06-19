@@ -1,6 +1,7 @@
 import os
 from glob import glob
 
+from django.core import serializers
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.template import loader
 from django.template.response import TemplateResponse
@@ -16,6 +17,8 @@ from .models import Book
 def index(request):
     books = Book.objects.order_by("-last_read")
     # loader.get_template("book/index.html")
+    if request.GET.get("format") == "json":
+        return HttpResponse(serializers.serialize("json",books),content_type="application/json")
     return TemplateResponse(request,"book/index.html",{"books":books,"book_dir":settings.BOOK_URL})
 
 def upload_book(request):
@@ -65,6 +68,7 @@ def book(request,id=None):
     
 def book_save(request,id):
     obj = Book.objects.get(book_id=id)
+    print(request.POST)
     # print(obj)
     obj.last_read_page = request.POST.get("progress")
     obj.last_read_index = request.POST.get("index")
