@@ -63,6 +63,7 @@
    <center>
   <div class="btn-group" role="group" aria-label="Basic example"> 
     <button type="button" class="btn btn-secondary"  onclick="javascript:rendition.prev()" >Prev</button>
+    <button type="button" class="btn btn-secondary " disable  id="page_name"  >Prev</button>
     <button type="button" class="btn btn-secondary"  onclick="javascript:rendition.next()" >Next</button>   
 
   </div>
@@ -70,156 +71,157 @@
 
  <!-- js 部分-->
     <script>
-        var book = ePub("/book_static/{{epub.id}}/{{epub.opf_file}}");
-         
 
-        var rendition = book.renderTo("viewer", {
-          manager: "default",
-          flow: "paginated",//"scrolled",
-          width: "100%",
-          height:$(window).height()-78,
-          //view:InlineView,
-        });
-        rendition.themes.default({ "p": { "font-size": "19px",'font-family':"PingFang SC"}})
 
-        book.loaded.navigation.then(function(toc){
-          var $nav = document.getElementById("menu"),
-              docfrag = document.createDocumentFragment();
-    
-          toc.forEach(function(chapter, index) {
-            var item = document.createElement("li");
-            $(item).addClass("list-group-item");
-            var link = document.createElement("a");
-            link.id = "chap-" + chapter.id;
-            link.textContent = chapter.label;
-            link.href = chapter.href;
-            item.appendChild(link);
-            docfrag.appendChild(item);
-    
-            link.onclick = function(){
-              var url = link.getAttribute("href");
-              console.log(url)
-              rendition.display(url);
-              return false;
-            };
-    
-          });
-    
-          $nav.appendChild(docfrag);
-    
-    
-        });
-        {% autoescape off %}
-        var displayed = rendition.display({{epubcfi }});
-        {% endautoescape %}
+    var book = ePub("/book_static/{{epub.id}}/{{epub.opf_file}}");
+    var rendition = book.renderTo("viewer", {
+      manager: "default",
+      flow: "paginated",//"scrolled",
+      width: "100%",
+      height:$(window).height()-78,
+      //view:InlineView,
+    });
+    rendition.themes.default({ "p": { "font-size": "19px",'font-family':"PingFang SC"}})
 
-        // 记录阅读进度
-        rendition.on("locationChanged",function(config){
-          $.ajax({
-            url: "/book/{{epub.id}}/save_progress",
-            type: "POST",
-            data:{
-              "csrfmiddlewaretoken": "{{ csrf_token }}",   
-              "progress": config["start"],
-              "book_id": "{{epub.id}}",
-              "index":config["index"],
-              "total_page":book.spine.length,
-            },
-            success: function (data) {
-              console.log(data);
-            } 
-          });
-          
-        });
-        // 计算上一页下一页的名称
-        rendition.on("rendered", function(section){
-          var nextSection = section.next();
-          var prevSection = section.prev();
-    
-          if(nextSection) {
-            nextNav = book.navigation.get(nextSection.href);
-    
-            if(nextNav) {
-              nextLabel = nextNav.label;
-            } else {
-              nextLabel = "next";
-            }
-    
-            next.textContent = nextLabel + " »";
-          } else {
-            next.textContent = "";
-          }
-    
-          if(prevSection) {
-            prevNav = book.navigation.get(prevSection.href);
-    
-            if(prevNav) {
-              prevLabel = prevNav.label;
-            } else {
-              prevLabel = "previous";
-            }
-    
-            prev.textContent = "« " + prevLabel;
-          } else {
-            prev.textContent = "";
-          }
-              
-        });
-        // 缩放时，保持当前位置
-        var mycfi;
-        var justResized = false;
-        var correcting = false;
-        rendition.on('relocated', () => {
-            // console.log('relocated')
-            if (!justResized) {
-                if (!correcting) {
-                    // console.log('real relocation')
-                    mycfi = rendition.currentLocation().start.cfi
-                } else {
-                    // console.log('corrected')
-                    correcting = false
-                }
-            } else {
-                // console.log('correcting')
-                justResized = false
-                correcting = true
-                rendition.display(mycfi)
-            }
-        })
-        rendition.on('resized', () => {
-            // console.log('resized')
-            justResized = true
-        })
+    book.loaded.navigation.then(function(toc){
+      var $nav = document.getElementById("menu"),
+          docfrag = document.createDocumentFragment();
 
-       
+      toc.forEach(function(chapter, index) {
+        var item = document.createElement("li");
+        $(item).addClass("list-group-item");
+        var link = document.createElement("a");
+        link.id = "chap-" + chapter.id;
+        link.textContent = chapter.label;
+        link.href = chapter.href;
+        item.appendChild(link);
+        docfrag.appendChild(item);
 
-        // 键盘控制翻页
-        
-        $(document).keydown(function(event){
-            var keyCode = event.keyCode |event.which;
-            console.log(keyCode);
-            switch(keyCode){
-                case 37:
+        link.onclick = function(){
+          var url = link.getAttribute("href");
+          console.log(url)
+          rendition.display(url);
+          return false;
+        };
 
-                rendition.prev();
-                    break;
-                case 39:
-                rendition.next();
-                    break;
-            }
+      });
 
-        });
+      $nav.appendChild(docfrag);
 
-        // 手势控制翻页
-        $(window).on( "swipeleft", function( event ) {
-            rendition.next();
-          });
+
+    });
+    {% autoescape off %}
+    var displayed = rendition.display({{epubcfi }});
+    {% endautoescape %}
+
+    // 记录阅读进度
+    rendition.on("locationChanged",function(config){
+      console.log(config);
+      //$("#page_name").text(config[start]);
+      $.ajax({
+        url: "/book/{{epub.id}}/save_progress",
+        type: "POST",
+        data:{
+          "csrfmiddlewaretoken": "{{ csrf_token }}",   
+          "progress": config["start"],
+          "book_id": "{{epub.id}}",
+          "index":config["index"],
+          "total_page":book.spine.length,
+        },
+        success: function (data) {
+          console.log(data);
+        } 
+      });
       
-          $(window).on( "swiperight", function( event ) {
-            rendition.prev();
-          });
+    });
+    // 计算上一页下一页的名称
+    rendition.on("rendered", function(section){
+      var nextSection = section.next();
+      var prevSection = section.prev();
 
-   
+      if(nextSection) {
+        nextNav = book.navigation.get(nextSection.href);
+
+        if(nextNav) {
+          nextLabel = nextNav.label;
+        } else {
+          nextLabel = "next";
+        }
+
+        next.textContent = nextLabel + " »";
+      } else {
+        next.textContent = "";
+      }
+
+      if(prevSection) {
+        prevNav = book.navigation.get(prevSection.href);
+
+        if(prevNav) {
+          prevLabel = prevNav.label;
+        } else {
+          prevLabel = "previous";
+        }
+
+        prev.textContent = "« " + prevLabel;
+      } else {
+        prev.textContent = "";
+      }
+          
+    });
+    // 缩放时，保持当前位置
+    var mycfi;
+    var justResized = false;
+    var correcting = false;
+    rendition.on('relocated', () => {
+        // console.log('relocated')
+        if (!justResized) {
+            if (!correcting) {
+                // console.log('real relocation')
+                mycfi = rendition.currentLocation().start.cfi
+            } else {
+                // console.log('corrected')
+                correcting = false
+            }
+        } else {
+            // console.log('correcting')
+            justResized = false
+            correcting = true
+            rendition.display(mycfi)
+        }
+    })
+    rendition.on('resized', () => {
+        // console.log('resized')
+        justResized = true
+    })
+
+  
+
+    // 键盘控制翻页
+    
+    $(document).keydown(function(event){
+        var keyCode = event.keyCode |event.which;
+        console.log(keyCode);
+        switch(keyCode){
+            case 37:
+
+            rendition.prev();
+                break;
+            case 39:
+            rendition.next();
+                break;
+        }
+
+    });
+
+    // 手势控制翻页
+    $(window).on( "swipeleft", function( event ) {
+      rendition.next();
+    });
+
+    $(window).on( "swiperight", function( event ) {
+      rendition.prev();
+    });
+
       
     </script>
 </body>

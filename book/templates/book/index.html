@@ -16,8 +16,15 @@
     <style>
         a{text-decoration:none;}
         .card{
-
             margin:2px;
+        }
+        #book_list_grid{
+            padding:0px;
+            margin:0px;
+        }
+        .col-4{
+            padding:0px;
+            margin:0px;
         }
     </style> 
 </head>
@@ -33,16 +40,17 @@
 <input type="text" class="form-control"  id="filterInput">
 </div>
 <div class="row" id="book_list_grid" > <!-- data-masonry='{"percentPosition": true ,"horizontalOrder": true,"itemSelector":".col-4"}' -->
-
 {% for book in books %}
-<div class="col-4">
+<div class="col-4"  >
   <div class="card border-1 shadow"   >
     <a href="book/{{book.book_id}}" class="link-secondary"  >
-
+        {% if book.icon_exists %}
         <img alt="{{book.book_name}}"  class="card-img-top" onerror="this.onerror=null; this.remove();" src="{{book_dir}}{{book.book_id}}/{{book.book_id}}.jpg">
-        <div class="card-body"  > 
-        <p class="card-text" style="overflow:hidden;white-space:nowrap;text-overflow:ellipsis;max-height:50px;">{{book.book_name}}<span style="display:none;">{{book.tags}}{{book.language}}</span></p>
-        </div>
+        <p class="card-text" style="display:none;">{{book.book_name}}<span >{{book.tags}}{{book.language}}</span></p>
+        {% else %}
+
+        <div class="card-title" style="max-height:140px;">{{book.book_name}}<span style="display:none;">{{book.tags}}{{book.language}}</span></div>
+        {% endif %}
         <div class="card-footer" style="font-size:9px;text-align:right;">{% widthratio book.last_read_index book.total_page 100%}%</div>
     </a>
 </div>
@@ -60,6 +68,12 @@
                 $(element).addClass("d-none");
             }
         });
+
+        var msnry = new Masonry( '#book_list_grid', {
+            "percentPosition": true ,
+            "horizontalOrder": true,
+           
+            "itemSelector":".card"});
      
 
     });
@@ -80,20 +94,15 @@
     });
 
     $(document.body).ready(function(){
-            var max = $(window).width();
-            var min_width= 150;
+            var max = $(document.body).width();
+            var min_width= 140;
             var num = Math.floor(max/min_width);
-            var remainder =max%min_width;
-
-            
-            var new_width=0;
-            if(remainder>0){
-                new_width =  Math.floor(remainder/num)+min_width;
-                console.log(max,min_width,num,remainder,new_width);
-
-            }else{
-                new_width =  min_width;
-            }
+            var remainder  =max%min_width;
+          
+            var new_width =  min_width + Math.floor(remainder/num);
+            var left = Math.ceil(max - new_width * num);
+            $("#book_list_grid").css("margin-left",left*4); //4 是card  的margin 两侧的和
+            console.log(num,min_width,new_width , new_width * num , max,left);
             var isMobile = false; //initiate as false
             // device detection
             if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent) 
@@ -101,11 +110,7 @@
                 isMobile = true;
             }
             $(".card").each(function(id,obj){
-                if(isMobile){
-                    $(obj).width(new_width-12);
-                }else{
-                    $(obj).width(new_width);
-                }
+                    $(obj).width(new_width-10);
             });
             var msnry = new Masonry( '#book_list_grid', {
                 "percentPosition": true ,
