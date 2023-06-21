@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+{% load static %}
+{% load django_bootstrap5 %}
+{% load bootstrap_icons %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content='width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0' name='viewport' />
+    <title>{{book.book_name}}</title>
+    <script src="{% static "jszip.min.js"%}"></script>
+    <script src="{% static "jquery-3.7.0.min.js"%}"></script>
+    <script src="{% static "epub.js"%}"></script>
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <link rel="stylesheet" href="{% static 'bootstrap_icons/css/bootstrap_icons.css' %}">
+    <style>
+      #viewer {
+        position: inherit;
+      }
+    </style>
+</head>
+<body>
+ 
+<!-- menu -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title" id="offcanvasExampleLabel">{{book.book_name}}</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <center><img onerror="this.onerror=null; this.remove();" style="display:inline;" width=120 src="https://nadoviewbooks.s3.ap-southeast-1.amazonaws.com/{{book.book_id}}/{{book.book_id}}.jpg" alt="logo"></center>
+
+    <div class="offcanvas-body">
+      <ul  class="list-group list-group-flush" id="menu">
+      </ul>
+    </div>
+  </div>
+  
+  <!-- book view 部分-->
+ 
+    <ul class="breadcrumb" style="--bs-breadcrumb-divider: '';margin:2px 10px 2px 10px;padding:0px;">
+      <li class="breadcrumb-item">
+        <a class="link-body-emphasis text-decoration-none" href="/">
+          {% bs_icon 'chevron-left' size='1.5em'  color="#646464"%}
+        </a>
+      </li>
+      <li class="breadcrumb-item" style="margin-left:30px;">
+        <a class="link-body-emphasis text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+          {% bs_icon 'list-ul' size='1.5em'  color="#646464"%}
+        </a>
+        </li>
+      <li class="breadcrumb-item">
+        <a id="prev" href="javascript:rendition.prev()" class="link-body-emphasis text-decoration-none">...</a>
+      </li>
+      <li class="breadcrumb-item">
+        <a id="next" href="javascript:rendition.next()" class="link-body-emphasis text-decoration-none">...</a>
+      </li>
+    </ul>
+
+
+  <div id="viewer" style="max-width:800px;margin:auto;position: relative;">
+  </div>
+   <center>
+  <div class="btn-group" role="group" aria-label="Basic example"> 
+    <button type="button" class="btn btn-secondary"  onclick="javascript:rendition.prev()" >Prev</button>
+    <button type="button" class="btn btn-secondary"  onclick="javascript:rendition.next()" >Next</button>   
+
+  </div>
+</center>
+
+ <!-- js 部分-->
+    <script>
+
+    $.ajax({
+      type:"GET",
+      url:"https://nadoviewbooks.s3.ap-southeast-1.amazonaws.com/{{book.book_id}}/META-INF/container.xml",
+      dataType: "xml",
+      success:parseXml
+    });
+    var book;
+    var rendition;
+function parseXml(xml) {
+
+      var opf = $(xml).find("rootfile")[0].getAttribute("full-path");
+      book = ePub("https://nadoviewbooks.s3.ap-southeast-1.amazonaws.com/{{book.book_id}}/"+opf);
+      rendition= book.renderTo("viewer", {
+        manager: "default",
+        flow: "scrolled", 
+        width: "100%",
+        height:$(window).height()-98,
+        //view:InlineView,
+      });
+      rendition.themes.default({ "p": { "font-size": "19px",'font-family':"PingFang SC"},"body":{"margin-top":"0px","padding-top":"0px"}});
+
+
+    book.loaded.navigation.then(function(toc){
+      var $nav = document.getElementById("menu"),
+          docfrag = document.createDocumentFragment();
+
+      toc.forEach(function(chapter, index) {
+        var item = document.createElement("li");
+        $(item).addClass("list-group-item");
+        var link = document.createElement("a");
+        link.id = "chap-" + chapter.id;
+        link.textContent = chapter.label;
+        link.href = chapter.href;
+        link.classList.add("link-secondary");
+        link.style.textDecoration = "None";
+        item.appendChild(link);
+        docfrag.appendChild(item);
+
+        link.onclick = function(){
+          var url = link.getAttribute("href");
+          console.log(url)
+          rendition.display(url);
+          return false;
+        };
+
+      });
+
+      $nav.appendChild(docfrag);
+
+
+    });
+    {% autoescape off %}
+    var displayed = rendition.display({{epubcfi }});
+    {% endautoescape %}
+
+    // 记录阅读进度
+    rendition.on("locationChanged",function(config){
+   
+      $.ajax({
+        url: "/book/{{book.book_id}}/save_progress",
+        type: "POST",
+        data:{
+          "csrfmiddlewaretoken": "{{ csrf_token }}",   
+          "progress": config["start"],
+          "book_id": "{{book.book_id}}",
+          "index":config["index"],
+          "total_page":book.spine.length,
+        },
+        success: function (data) {
+          console.log(data);
+        } 
+      });
+      
+    });
+    // 计算上一页下一页的名称
+    rendition.on("rendered", function(section){
+      var nextSection = section.next();
+      var prevSection = section.prev();
+
+      if(nextSection) {
+        nextNav = book.navigation.get(nextSection.href);
+
+        if(nextNav) {
+          nextLabel = nextNav.label;
+        } else {
+          nextLabel = "next";
+        }
+
+        next.textContent = nextLabel + " »";
+      } else {
+        next.textContent = "";
+      }
+
+      if(prevSection) {
+        prevNav = book.navigation.get(prevSection.href);
+
+        if(prevNav) {
+          prevLabel = prevNav.label;
+        } else {
+          prevLabel = "previous";
+        }
+
+        prev.textContent = "« " + prevLabel;
+      } else {
+        prev.textContent = "";
+      }
+          
+    });
+    // 缩放时，保持当前位置
+    var mycfi;
+    var justResized = false;
+    var correcting = false;
+    rendition.on('relocated', () => {
+        // console.log('relocated')
+        if (!justResized) {
+            if (!correcting) {
+                // console.log('real relocation')
+                mycfi = rendition.currentLocation().start.cfi
+            } else {
+                // console.log('corrected')
+                correcting = false
+            }
+        } else {
+            // console.log('correcting')
+            justResized = false
+            correcting = true
+            rendition.display(mycfi)
+        }
+    })
+    rendition.on('resized', () => {
+        // console.log('resized')
+        justResized = true
+    })
+
+    rendition.on("selected",function(a,b){
+      console.log(a);
+      console.log(b);
+      // rendition.annotations.add("highlight",a);
+    });
+    rendition.on("keyup",function(event){
+      console.log("keyup...",event);
+      if(event.code == "ArrowLeft"){
+        rendition.prev();
+      }else if(event.code == "ArrowRight"){
+        rendition.next();
+      }
+    });
+}   
+
+    
+
+    // 键盘控制翻页
+    
+    $(document).keydown(function(event){
+        var keyCode = event.keyCode |event.which;
+        console.log(keyCode);
+        switch(keyCode){
+            case 37:
+
+            rendition.prev();
+                break;
+            case 39:
+            rendition.next();
+                break;
+        }
+
+    });
+
+    // 手势控制翻页
+    $(window).on( "swipeleft", function( event ) {
+      rendition.next();
+    });
+
+    $(window).on( "swiperight", function( event ) {
+      rendition.prev();
+    });
+      
+    </script>
+</body>
+</html>
