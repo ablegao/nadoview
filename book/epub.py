@@ -9,6 +9,7 @@ import xml.sax as sax  # import ContentHandler
 import zipfile
 from collections.abc import Iterable
 from glob import glob
+from urllib.parse import unquote
 from xml.dom import minidom
 
 from PIL import Image
@@ -197,7 +198,7 @@ class Epub:
             for meta in metas:
                 if meta.getAttribute("name") == "cover":
                     id = meta.getAttribute("content")
-                    self.cover_path = self.manifest[id]["href"]
+                    self.cover_path = unquote(self.manifest[id]["href"])
                     break
         cover = os.path.join(self.opf_base, self.cover_path)
         try:
