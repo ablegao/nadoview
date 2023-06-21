@@ -15,9 +15,7 @@
     {% bootstrap_javascript %}
     <link rel="stylesheet" href="{% static 'bootstrap_icons/css/bootstrap_icons.css' %}">
     <style>
-      #viewer {
-        position: inherit;
-      }
+     
     </style>
 </head>
 <body>
@@ -73,7 +71,7 @@
 
     $.ajax({
       type:"GET",
-      url:"https://nadoviewbooks.s3.ap-southeast-1.amazonaws.com/{{book.book_id}}/META-INF/container.xml",
+      url:"/book_static/{{book.book_id}}/META-INF/container.xml",
       dataType: "xml",
       success:parseXml
     });
@@ -82,12 +80,12 @@
 function parseXml(xml) {
 
       var opf = $(xml).find("rootfile")[0].getAttribute("full-path");
-      book = ePub("https://nadoviewbooks.s3.ap-southeast-1.amazonaws.com/{{book.book_id}}/"+opf);
+      book = ePub("/book_static/{{book.book_id}}/"+opf);
       rendition= book.renderTo("viewer", {
         manager: "default",
         flow: "scrolled", 
         width: "100%",
-        height:$(window).height()-98,
+     
         //view:InlineView,
       });
       rendition.themes.default({ "p": { "font-size": "19px",'font-family':"PingFang SC"},"body":{"margin-top":"0px","padding-top":"0px"}});

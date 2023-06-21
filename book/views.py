@@ -49,7 +49,7 @@ def refresh_book_cache(request):
 
 def book(request,id=None):
    
-    # epub = Epub(os.path.join(settings.BOOK_PATH,id),settings.BOOK_PATH)
+    epub = Epub(os.path.join(settings.BOOK_PATH,id),settings.BOOK_PATH)
     
     book = Book.objects.get(book_id=id)
     epubcfi = ""
@@ -57,7 +57,7 @@ def book(request,id=None):
         epubcfi = book.last_read_page
         epubcfi = f'"{epubcfi}"'
     # if os.path.isdir(book) and len(root)==32:
-    return TemplateResponse(request, "book/book_scrolled.html",{"book":book,"epubcfi":epubcfi,"book_dir":settings.BOOK_URL})
+    return TemplateResponse(request, "book/book_scrolled.html",{"epub":epub,"book":book,"epubcfi":epubcfi,"book_dir":settings.BOOK_URL})
 
 
     # book = Epub(os.path.join(settings.BOOK_PATH,id))
