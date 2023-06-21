@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+{% load static %}
+{% load django_bootstrap5 %}
+{% load bootstrap_icons %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content='width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0' name='viewport' />
+    <title>{{epub.book_name}}</title>
+
+    <script src="{% static "jquery-3.7.0.min.js"%}"></script>
+    {% comment %} <script src="{% static "epub.js"%}"></script> {% endcomment %}
+    <script src="{% static "jquery-3.7.0.min.js"%}"></script>
+
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <link rel="stylesheet" href="{% static 'bibi/bootstrap_icons/css/bootstrap_icons.css' %}">
+    <link id="bibi-style" rel="stylesheet" href="{% static 'bibi/resources/styles/bibi.css'%}" />
+    <link id="bibi-dress" rel="stylesheet" href="{% static 'bibi/wardrobe/everyday/bibi.dress.css' %}" />
+    <script id="bibi-script" src="{% static 'bibi/resources/scripts/bibi.js' %}"></script>
+    <script id="bibi-preset" src="{% static 'bibi/presets/default.js' %}" data-bibi-bookshelf=""></script>
+
+</head>
+<body>
+    {% comment %} <div id="viewer"  data-bibi-book-mimetype="application/epub+zip" hidden="hidden"></div> {% endcomment %}
+    <a href="/{{book_dir}}{{book_model.book_id}}" data-bibi="embed" data-bibi-style=" for embeded Bibi frame, as you like ]]">[[ Title of the Book ]]</a>
+[[ CSS
+</body>
+</html>

@@ -1,4 +1,5 @@
 import os
+from tokenize import Comment
 
 from django.db import models
 
@@ -23,7 +24,23 @@ class Book(models.Model):
             return True
         return False
     
+    @property
+    def page_read_rote(self):
+        if self.last_read_index == 0:
+            return "未读"
+        page_read = round(self.last_read_index/self.total_page*100)
+        return f"{page_read}%"
+    
     # def __dict__(self):
 
+
+class BookHighlight(models.Model):
+    id = models.AutoField(primary_key=True, auto_created=True)
+    book_id = models.CharField(max_length=32)
+    page = models.CharField(max_length=100)
+    epubcfi = models.CharField(max_length=200)
+    highlight = models.TextField()
+    remark = models.TextField(null=True)
+    last_time = models.DateTimeField(auto_now=True, auto_created=True)
 
 
