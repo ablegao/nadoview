@@ -1,21 +1,28 @@
 <!DOCTYPE html>
 {% load static %}
 {% load django_bootstrap5 %}
-{% load bootstrap_icons %}
 
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta content='width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0' name='viewport' />
     <title>{{book.book_name}}</title>
+    <link crossorigin="anonymous" href="{% static "bootstrap.min.css"%}" rel="stylesheet">
+
+    <script src="{% static "bootstrap.bundle.min.js"%}"></script>
     <script src="{% static "jszip.min.js"%}"></script>
     <script src="{% static "jquery-3.7.0.min.js"%}"></script>
     <script src="{% static "epub.js"%}"></script>
-    {% bootstrap_css %}
-    {% bootstrap_javascript %}
+ 
+ 
+ 
     <link rel="stylesheet" href="{% static 'bootstrap_icons/css/bootstrap_icons.css' %}">
+
     <style>
-     
+      #selectedMenu {
+        font-size:22px;
+        font-weight:bold;
+      }
     </style>
 </head>
 <body>
@@ -26,7 +33,7 @@
       <h5 class="offcanvas-title" id="offcanvasExampleLabel">{{book.book_name}}</h5>
       <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
-    <center><img onerror="this.onerror=null; this.remove();" style="display:inline;" width=120 src="https://nadoviewbooks.s3.ap-southeast-1.amazonaws.com/{{book.book_id}}/{{book.book_id}}.jpg" alt="logo"></center>
+    <center><img onerror="this.onerror=null; this.remove();" style="display:inline;" width=120 src="/book_static/{{book.book_id}}/{{book.book_id}}.jpg" alt="logo"></center>
 
     <div class="offcanvas-body">
       <ul  class="list-group list-group-flush" id="menu">
@@ -41,12 +48,16 @@
 
       <li class="breadcrumb-item">
         <a class="link-body-emphasis text-decoration-none" href="/">
-          {% bs_icon 'chevron-left' size='1.5em'  color="#646464"%}
+          <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" style="margin-top:4px;" class="bi bi-chevron-left text-secondary" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+          </svg>
         </a>
       </li>
       <li class="breadcrumb-item" style="margin-left:30px;">
-        <a class="link-body-emphasis text-decoration-none" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
-          {% bs_icon 'list-ul' size='1.5em'  color="#646464"%}
+        <a class="link-body-emphasis text-decoration-none" data-bs-toggle="offcanvas"  data-bs-target="#offcanvasExample" aria-controls="offcanvasExample">
+          <svg xmlns="http://www.w3.org/2000/svg" width="21" height="21" fill="currentColor" style="margin-top:4px;" class="bi bi-list-ul text-secondary" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5zm-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2zm0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/>
+          </svg>
         </a>
         </li>
       <li class="breadcrumb-item">
@@ -58,7 +69,7 @@
     </ul>
 
 
-  <div id="viewer" style="max-width:1400px;margin:auto;position: relative;">
+  <div id="viewer" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="max-width:1400px;margin:auto;position: relative;">
   </div>
    <center>
   <div class="btn-group" role="group" aria-label="Basic example"> 
@@ -66,6 +77,30 @@
     <button type="button" class="btn btn-secondary"  onclick="javascript:rendition.next()" >Next</button>   
 
   </div>
+
+
+
+ 
+  <div class="btn-toolbar"    id="selectedMenu"  role="toolbar" aria-label="Basic example">
+    <div class="btn-group me-2" role="group"  aria-label="First group">
+    <button type="button" id="selected_underline" class="btn btn-secondary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-type-underline" viewBox="0 0 16 16">
+        <path d="M5.313 3.136h-1.23V9.54c0 2.105 1.47 3.623 3.917 3.623s3.917-1.518 3.917-3.623V3.136h-1.23v6.323c0 1.49-.978 2.57-2.687 2.57-1.709 0-2.687-1.08-2.687-2.57V3.136zM12.5 15h-9v-1h9v1z"/>
+      </svg>
+    </button>
+    <button type="button" id="selected_highlight" class="btn btn-secondary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-brightness-high" viewBox="0 0 16 16">
+        <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+      </svg>
+    </button>
+    <button type="button" id="selected_quote" class="btn btn-secondary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-quote" viewBox="0 0 16 16">
+        <path d="M12 12a1 1 0 0 0 1-1V8.558a1 1 0 0 0-1-1h-1.388c0-.351.021-.703.062-1.054.062-.372.166-.703.31-.992.145-.29.331-.517.559-.683.227-.186.516-.279.868-.279V3c-.579 0-1.085.124-1.52.372a3.322 3.322 0 0 0-1.085.992 4.92 4.92 0 0 0-.62 1.458A7.712 7.712 0 0 0 9 7.558V11a1 1 0 0 0 1 1h2Zm-6 0a1 1 0 0 0 1-1V8.558a1 1 0 0 0-1-1H4.612c0-.351.021-.703.062-1.054.062-.372.166-.703.31-.992.145-.29.331-.517.559-.683.227-.186.516-.279.868-.279V3c-.579 0-1.085.124-1.52.372a3.322 3.322 0 0 0-1.085.992 4.92 4.92 0 0 0-.62 1.458A7.712 7.712 0 0 0 3 7.558V11a1 1 0 0 0 1 1h2Z"/>
+      </svg>
+    </button>
+    </div>
+  </div>
+
 </center>
 
  <!-- js 部分-->
@@ -135,9 +170,9 @@ function parseXml(xml) {
 
     });
     {% autoescape off %}
-    var displayed = rendition.display({{epubcfi }});
+    var displayed = rendition.display({{epubcfi}});
     {% endautoescape %}
-
+    $("#selectedMenu").hide();
     // 记录阅读进度
     rendition.on("locationChanged",function(config){
    
@@ -192,7 +227,7 @@ function parseXml(xml) {
           
     });
     // 缩放时，保持当前位置
-    /*
+    
     var mycfi;
     var justResized = false;
     var correcting = false;
@@ -217,12 +252,40 @@ function parseXml(xml) {
         // console.log('resized')
         justResized = true
     })
-*/
+    var selected_text = "";
     rendition.on("selected",function(a,b){
-      console.log(a);
-      console.log(b);
+      var selection = b.window.getSelection();
+      selected_text = a;
+      
+      var rect = selection.getRangeAt(0).getBoundingClientRect();
+      $("#selectedMenu").css({
+        position: 'absolute',
+        top: rect.top,
+        left: rect.left + (rect.right-rect.left)/2 - $("#selectedMenu").width()/2,
+      });
+      $("#selectedMenu").show();
       // rendition.annotations.add("highlight",a);
+    
+
     });
+
+    $("#selected_highlight").click(function(){
+      rendition.annotations.add("highlight",selected_text);
+      // $("#selectedMenu").hide();
+    });
+    $("#selected_underline").click(function(){
+      rendition.annotations.add("underline",selected_text);
+      // $("#selectedMenu").hide();
+    });
+    rendition.on("mouseup",function(a,b){
+      var rect = b.window.getSelection().getRangeAt(0).getBoundingClientRect();
+      if(rect.width <1){
+        $("#selectedMenu").hide();
+        if(selected_text!="") selected_text="";
+      }
+    });
+
+
     rendition.on("keyup",function(event){
       console.log("keyup...",event);
       if(event.code == "ArrowLeft"){
