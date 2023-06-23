@@ -37,9 +37,8 @@ class Book(models.Model):
 class BookHighlight(models.Model):
     id = models.AutoField(primary_key=True, auto_created=True)
     book_id = models.CharField(max_length=32)
-    page = models.CharField(max_length=100)
     epubcfi = models.CharField(max_length=200)
-    highlight = models.TextField()
+    method_name = models.CharField(max_length=200,null=True)
     remark = models.TextField(null=True)
     last_time = models.DateTimeField(auto_now=True, auto_created=True)
 

@@ -73,8 +73,8 @@
   </div>
    <center>
   <div class="btn-group" role="group" aria-label="Basic example"> 
-    <button type="button" class="btn btn-secondary"  onclick="javascript:rendition.prev()" >Prev</button>
-    <button type="button" class="btn btn-secondary"  onclick="javascript:rendition.next()" >Next</button>   
+    <button type="button" class="btn btn-secondary"  onclick="javascript:rendition.prev();$('#selectedMenu').hide();" >Prev</button>
+    <button type="button" class="btn btn-secondary"  onclick="javascript:rendition.next();$('#selectedMenu').hide();" >Next</button>   
 
   </div>
 
@@ -96,6 +96,11 @@
     <button type="button" id="selected_quote" class="btn btn-secondary">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-quote" viewBox="0 0 16 16">
         <path d="M12 12a1 1 0 0 0 1-1V8.558a1 1 0 0 0-1-1h-1.388c0-.351.021-.703.062-1.054.062-.372.166-.703.31-.992.145-.29.331-.517.559-.683.227-.186.516-.279.868-.279V3c-.579 0-1.085.124-1.52.372a3.322 3.322 0 0 0-1.085.992 4.92 4.92 0 0 0-.62 1.458A7.712 7.712 0 0 0 9 7.558V11a1 1 0 0 0 1 1h2Zm-6 0a1 1 0 0 0 1-1V8.558a1 1 0 0 0-1-1H4.612c0-.351.021-.703.062-1.054.062-.372.166-.703.31-.992.145-.29.331-.517.559-.683.227-.186.516-.279.868-.279V3c-.579 0-1.085.124-1.52.372a3.322 3.322 0 0 0-1.085.992 4.92 4.92 0 0 0-.62 1.458A7.712 7.712 0 0 0 3 7.558V11a1 1 0 0 0 1 1h2Z"/>
+      </svg>
+    </button>
+    <button type="button" id="selected_remove" class="btn btn-secondary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3" viewBox="0 0 16 16">
+        <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
       </svg>
     </button>
     </div>
@@ -123,7 +128,7 @@ function parseXml(xml) {
         flow: "paginated", 
         width: "100%",
         height:$(window).height()-80,
-     
+        allowScriptedContent:true,
         //view:InlineView,
       });
       var isMobile = false; //initiate as false
@@ -251,37 +256,111 @@ function parseXml(xml) {
     rendition.on('resized', () => {
         // console.log('resized')
         justResized = true
-    })
+    })     
     var selected_text = "";
+    var clicked_text= "";
     rendition.on("selected",function(a,b){
       var selection = b.window.getSelection();
       selected_text = a;
+      if(clicked_text!=""){
+        selected_text = clicked_text;
+        clicked_text = "";
+      }
       
       var rect = selection.getRangeAt(0).getBoundingClientRect();
+      var left = rect.left % $("#viewer").width()
+      var right = rect.right % $("#viewer").width()
       $("#selectedMenu").css({
         position: 'absolute',
         top: rect.top,
-        left: rect.left + (rect.right-rect.left)/2 - $("#selectedMenu").width()/2,
+        left: left + (right-left)/2 - $("#selectedMenu").width()/2,
       });
       $("#selectedMenu").show();
       // rendition.annotations.add("highlight",a);
-    
-
+    });
+    rendition.on("markClicked",function(cfi,data,context){
+      var selection = context.window.getSelection();
+      var range = rendition.getRange(cfi);
+      if(selection && range){
+        selection.removeAllRanges();
+      }
+      selection.addRange(range);
+      selected_text = cfi;
     });
 
     $("#selected_highlight").click(function(){
-      rendition.annotations.add("highlight",selected_text);
+      
+      $.ajax({
+        url: "{% url "hight" %}",
+        type: "POST",
+        data:{
+          "csrfmiddlewaretoken": "{{ csrf_token }}",   
+          "cfi": selected_text,
+          "book_id": "{{book.book_id}}",
+          "method_name":"highlight",
+          "remark":""
+        },
+        success: function (data) {
+          console.log(data);
+          if(data.msg && data.msg == "success"){
+            rendition.annotations.add("highlight",selected_text);
+          }
+        } 
+      });
+ 
       // $("#selectedMenu").hide();
     });
     $("#selected_underline").click(function(){
-      rendition.annotations.add("underline",selected_text);
+      
       // $("#selectedMenu").hide();
+      $.ajax({
+        url: "{% url "hight" %}",
+        type: "POST",
+        data:{
+          "csrfmiddlewaretoken": "{{ csrf_token }}",   
+          "cfi": selected_text,
+          "book_id": "{{book.book_id}}",
+          "method_name":"underline",
+          "remark":""
+        },
+        success: function (data) {
+          console.log(data);
+          if(data.msg && data.msg == "success"){
+            rendition.annotations.add("underline",selected_text);
+          }
+        } 
+      });
     });
+    $("#selected_remove").click(function(){
+      rendition.annotations.remove(selected_text,"underline");
+      rendition.annotations.remove(selected_text,"highlight");
+      rendition.annotations.remove(selected_text,"mark");
+      $.ajax({
+        url: "{% url "light_remove" %}",
+        type: "POST",
+        data:{
+          "csrfmiddlewaretoken": "{{ csrf_token }}",   
+          "cfi": selected_text,
+          "book_id": "{{book.book_id}}",
+        },
+        success: function (data) {
+          console.log(data);
+        } 
+      });
+
+
+  
+    
+    });
+    {% for hight in hights %}
+    rendition.annotations.add("{{hight.method_name}}","{{hight.epubcfi}}");
+    {% endfor %}
     rendition.on("mouseup",function(a,b){
       var rect = b.window.getSelection().getRangeAt(0).getBoundingClientRect();
       if(rect.width <1){
         $("#selectedMenu").hide();
         if(selected_text!="") selected_text="";
+        if(clicked_text!="") clicked_text = "";
       }
     });
 
@@ -293,6 +372,7 @@ function parseXml(xml) {
       }else if(event.code == "ArrowRight"){
         rendition.next();
       }
+      $("#selectedMenu").hide();
     });
 }   
 
@@ -312,16 +392,19 @@ function parseXml(xml) {
             rendition.next();
                 break;
         }
+        $("#selectedMenu").hide();
 
     });
 
     // 手势控制翻页
     $(window).on( "swipeleft", function( event ) {
       rendition.next();
+      $("#selectedMenu").hide();
     });
 
     $(window).on( "swiperight", function( event ) {
       rendition.prev();
+      $("#selectedMenu").hide();
     });
       
     </script>

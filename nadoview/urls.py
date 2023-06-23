@@ -23,11 +23,13 @@ from nadoview import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("book/upload_book",book.views.upload_book),
-    path("book/refresh_book_cache",book.views.refresh_book_cache),
-
-    path("book/<str:id>/save_progress",book.views.book_save),
+    path("book/upload_book",book.views.upload_book, name="upload_book"),
+    path("book/refresh_book_cache",book.views.refresh_book_cache,name="refresh_book" ),
+    path("book/book_hight",book.views.book_hight,name="hight"),
+    path("book/book_light_remove",book.views.book_hight_remove,name="light_remove"),
+    path("book/<str:id>/save_progress",book.views.book_save,name="book_update"),
     path("book/<str:id>", book.views.book),
+
 
     path("",  book.views.index),
     

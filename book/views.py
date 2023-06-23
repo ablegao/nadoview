@@ -1,4 +1,5 @@
 import os
+import re
 from glob import glob
 
 from django.core import serializers
@@ -10,7 +11,7 @@ from genericpath import isfile
 from nadoview import settings
 
 from .epub import Epub
-from .models import Book
+from .models import Book, BookHighlight
 
 
 # Create your views here.
@@ -56,8 +57,11 @@ def book(request,id=None):
     if book.last_read_page is not None and book.last_read_page !="":
         epubcfi = book.last_read_page
         epubcfi = f'"{epubcfi}"'
+
+    hights = BookHighlight.objects.filter(book_id=id)
+
     # if os.path.isdir(book) and len(root)==32:
-    return TemplateResponse(request, "book/book_scrolled.html",{"epub":epub,"book":book,"epubcfi":epubcfi,"book_dir":settings.BOOK_URL})
+    return TemplateResponse(request, "book/book_scrolled.html",{"epub":epub,"hights":hights,"book":book,"epubcfi":epubcfi,"book_dir":settings.BOOK_URL})
 
 
     # book = Epub(os.path.join(settings.BOOK_PATH,id))
@@ -75,3 +79,40 @@ def book_save(request,id):
     obj.total_page = request.POST.get("total_page")
     obj.save()
     return JsonResponse({"msg":"success"})
+
+
+def book_hight(request):
+    try:
+        obj = BookHighlight.objects.get(book_id=request.POST.get("book_id"),
+                                    epubcfi=request.POST.get("cfi"),
+                                    method_name = request.POST.get("method_name")
+                                    )
+        obj.remark = request.POST.get("remark")
+        if request.POST.get("delete","") == "true":
+            obj.delete();
+            return JsonResponse({"msg":"success"})
+        else:
+            return JsonResponse({"error":"exists"})
+    except BookHighlight.DoesNotExist:
+        if request.POST.get("delete","") == "true":
+            return JsonResponse({"msg":"not exists"})
+             
+        obj = BookHighlight(book_id=request.POST.get("book_id"),
+                            epubcfi=request.POST.get("cfi"),
+                            method_name = request.POST.get("method_name"),
+                            remark = request.POST.get("remark"),
+                            )
+        obj.save();
+
+    return JsonResponse({"msg":"success"})
+
+
+def book_hight_remove(request):
+    try:
+        obj = BookHighlight.objects.filter(book_id=request.POST.get("book_id"),
+                                    epubcfi=request.POST.get("cfi")
+                                    )
+        obj.delete()
+        return JsonResponse({"msg":"success"})
+    except BookHighlight.DoesNotExist:
+        return JsonResponse({"msg":"not exists"})
