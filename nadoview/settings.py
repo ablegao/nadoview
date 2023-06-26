@@ -82,7 +82,7 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     }
 }
-BOOK_PATH="/Users/ablegao/.cache/nadoview" #BASE_DIR / "books"
+BOOK_PATH= BASE_DIR / "books"
 BOOK_URL = "book_static/"
 
 # Password validation

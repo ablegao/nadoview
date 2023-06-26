@@ -1,0 +1,6 @@
+Django==4.2.2
+aiohttp==3.8.4
+Pillow
+openai
+django-bootstrap5
+django-bootstrap-icons
