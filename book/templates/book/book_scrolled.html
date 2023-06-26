@@ -5,6 +5,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="viewport" content="minimal-ui">
     <meta content='width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0' name='viewport' />
     <title>{{book.book_name}}</title>
     <link crossorigin="anonymous" href="{% static "bootstrap.min.css"%}" rel="stylesheet">
@@ -23,6 +25,9 @@
         font-size:22px;
         font-weight:bold;
       }
+       
+      
+      
     </style>
 </head>
 <body>
@@ -69,7 +74,7 @@
     </ul>
 
 
-  <div id="viewer" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="max-width:1400px;margin:auto;position: relative;">
+  <div id="viewer" class="spreads" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="max-width:1400px;margin:auto;position: relative;">
   </div>
    <center>
   <div class="btn-group" role="group" aria-label="Basic example"> 
