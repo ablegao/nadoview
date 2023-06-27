@@ -277,7 +277,7 @@ function parseXml(xml) {
       var right = rect.right % $("#viewer").width()
       $("#selectedMenu").css({
         position: 'absolute',
-        top: rect.top,
+        top: rect.top+rect.height,
         left: left + (right-left)/2 - $("#selectedMenu").width()/2,
       });
       $("#selectedMenu").show();
