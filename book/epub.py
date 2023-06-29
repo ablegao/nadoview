@@ -202,7 +202,9 @@ class Epub:
                     break
         cover = os.path.join(self.opf_base, self.cover_path)
         try:
-            Image.open(cover).save(cover_path)
+            img = Image.open(cover)
+            img.thumbnail((191,244))
+            img.save(cover_path)
             self.cover_path = cover_path
         except Exception as e:
             print("ERROR:.......... cover",e)
