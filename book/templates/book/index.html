@@ -80,7 +80,7 @@
 <div class="row">
 <input type="text" class="form-control"  id="filterInput">
 </div>
-<div id="tag_cloud" ></div>
+<div id="tag_cloud" style="margin:10px;" ></div>
 <div class="row" id="book_list_grid" > <!-- data-masonry='{"percentPosition": true ,"horizontalOrder": true,"itemSelector":".col-4"}' -->
 {% for book in books %}
 
@@ -155,7 +155,7 @@
                 var tag_cloud = data.tag_cloud;
                 var tag_cloud_html = "";
                 for(var i=0;i<tag_cloud.length;i++){
-                    tag_cloud_html += "<a href='javascript:filter_book(\""+tag_cloud[i].tag_name+"\")' class='badge bg-"+colors[ i % colors.length ]+"'>"+tag_cloud[i].tag_name+"</a>";
+                    tag_cloud_html += "<a href='javascript:filter_book(\""+tag_cloud[i].tag_name+"\")' class='badge shadow-sm bg-"+colors[ i % colors.length ]+"'>"+tag_cloud[i].tag_name+"</a>";
                 }
                 $("#tag_cloud").html(tag_cloud_html);
             }
