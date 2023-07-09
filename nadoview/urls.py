@@ -27,6 +27,7 @@ urlpatterns = [
     path("book/refresh_book_cache",book.views.refresh_book_cache,name="refresh_book" ),
     path("book/book_hight",book.views.book_hight,name="hight"),
     path("book/book_light_remove",book.views.book_hight_remove,name="light_remove"),
+    path("book/get_book_tag_cloud",book.views.get_book_tag_cloud,name="get_book_tag_cloud"),
     path("book/<str:id>/save_progress",book.views.book_save,name="book_update"),
     path("book/<str:id>", book.views.book),
 

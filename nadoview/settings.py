@@ -83,6 +83,7 @@ DATABASES = {
     }
 }
 BOOK_PATH= BASE_DIR / "books"
+BOOK_PATH= "/Users/ablegao/.cache/nadoview"
 BOOK_URL = "book_static/"
 
 # Password validation

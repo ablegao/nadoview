@@ -1,3 +1,4 @@
+import json
 import os
 import re
 from glob import glob
@@ -69,7 +70,30 @@ def book(request,id=None):
     #     Book.objects.get(book_id=book.id)
     # except Exception:
     #     pass
-    
+
+def get_book_tag_cloud(request):
+    books = Book.objects.all()
+    tags = {}
+    for book in books:
+        # if book.book_author and book.book_author != "":
+        #     book.book_author = book.book_author.replace("，",",")
+        #     for auther in book.book_author.split(","):
+        #         if auther in tags:
+        #             tags[auther] += 1
+        #         else:
+        #             tags[auther] = 1
+        if book.tags and book.tags != "":
+            book.tags = book.tags.replace("，",",")
+            for tag in book.tags.split(","):
+                if tag in tags:
+                    tags[tag] += 1
+                else:
+                    tags[tag] = 1
+        
+    out = []
+    for k,v in tags.items():
+        out.append({"tag_name":k,"tag_count":v})
+    return  JsonResponse({"tag_cloud":out}) #HttpResponse(json.dumps(out),content_type="application/json")
 def book_save(request,id):
     obj = Book.objects.get(book_id=id)
     print(request.POST)
